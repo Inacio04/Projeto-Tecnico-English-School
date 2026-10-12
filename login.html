@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <title>Login - Inglês Ijuí</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+  <link href="https://fonts.googleapis.com/css?family=Montserrat" rel="stylesheet" type="text/css">
+  <link href="https://fonts.googleapis.com/css?family=Lato" rel="stylesheet" type="text/css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+  <style>
+    body {
+      font: 400 15px Lato, sans-serif;
+      line-height: 1.8;
+      color: #818181;
+    }
+    h2 {
+      font-size: 24px;
+      text-transform: uppercase;
+      color: #303030;
+      font-weight: 600;
+      margin-bottom: 30px;
+    }
+    h4 {
+      font-size: 19px;
+      line-height: 1.375em;
+      color: #303030;
+      font-weight: 400;
+      margin-bottom: 30px;
+    }   
+    .container-fluid {
+      padding: 60px 50px;
+    }
+    .bg-grey {
+      background-color: #f6f6f6;
+    }
+    /* Estilos do Painel de Login */
+    .login-panel {
+      max-width: 450px;
+      margin: 0 auto;
+      border: 1px solid #2237f5;
+      background: #fff;
+      box-shadow: 0px 5px 25px rgba(0,0,0,0.1);
+      border-radius: 0 !important;
+    }
+    .login-heading {
+      color: #fff !important;
+      background-color: #1e45f4 !important;
+      padding: 25px;
+      text-align: center;
+      font-family: Montserrat, sans-serif;
+    }
+    .login-heading h3 {
+      margin: 0;
+      font-size: 24px;
+      color: #fff;
+    }
+    .login-body {
+      padding: 30px;
+    }
+    .login-body .form-control {
+      border-radius: 0;
+      height: 45px;
+      margin-bottom: 20px;
+      border: 1px solid #ccc;
+    }
+    .login-body .form-control:focus {
+      border-color: #1e45f4;
+      box-shadow: none;
+    }
+    .login-btn {
+      width: 100%;
+      background-color: #1e3ef4;
+      color: #fff;
+      border: none;
+      padding: 12px;
+      font-size: 16px;
+      font-family: Montserrat, sans-serif;
+      transition: background-color 0.3s;
+    }
+    .login-btn:hover {
+      background-color: #162eb5;
+      color: #fff;
+    }
+    .navbar {
+      margin-bottom: 0;
+      background-color: #1e2cf4;
+      z-index: 9999;
+      border: 0;
+      font-size: 12px !important;
+      line-height: 1.42857143 !important;
+      letter-spacing: 4px;
+      border-radius: 0;
+      font-family: Montserrat, sans-serif;
+    }
+    .navbar li a, .navbar .navbar-brand {
+      color: #fff !important;
+    }
+    .navbar-nav li a:hover, .navbar-nav li.active a {
+      color: #1e3ef4 !important;
+      background-color: #fff !important;
+    }
+    .navbar-default .navbar-toggle {
+      border-color: transparent;
+      color: #fff !important;
+    }
+  </style>
+</head>
+<body id="myPage" data-spy="scroll" data-target=".navbar" data-offset="60">
+
+<!-- Barra de Navegação -->
+<nav class="navbar navbar-default navbar-fixed-top">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#myNavbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>                   
+      </button>
+      <a class="navbar-brand" href="index.html">Inglês ijuí</a>
+    </div>
+    <div class="collapse navbar-collapse" id="myNavbar">
+      <ul class="nav navbar-nav navbar-right">
+        <li><a href="#about">Sobre nós</a></li>
+        <li><a href="#services">Serviços</a></li>
+        <li><a href="#portfolio">Onde estamos</a></li>
+        <li><a href="#pricing">Cursos</a></li>
+        <li><a href="#login-section">Login</a></li>
+        <li><a href="#contact">Contato</a></li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<!-- Seção de Login -->
+<div id="login-section" class="container-fluid bg-grey" style="min-height: 80vh; display: flex; align-items: center; justify-content: center;">
+  <div style="width: 100%;">
+    <div class="text-center" style="margin-bottom: 25px;">
+      <h2>Acesso Restrito</h2>
+      <h4>Digite suas credenciais para entrar no portal</h4>
+    </div>
+
+    <div class="login-panel">
+      <div class="login-heading">
+        <h3>Identificação</h3>
+      </div>
+      <div class="login-body">
+        <!-- Formulário de Login com função JavaScript -->
+        <form id="loginForm" onsubmit="validarLogin(event)">
+          <div class="form-group">
+            <label for="usuario">Usuário:</label>
+            <input type="text" class="form-control" id="usuario" placeholder="Digite seu usuário" required>
+          </div>
+          <div class="form-group">
+            <label for="senha">Senha:</label>
+            <input type="password" class="form-control" id="senha" placeholder="Digite sua senha" required>
+          </div>
+          <div id="msgErro" style="color: red; margin-bottom: 15px; text-align: center; font-weight: bold;"></div>
+          <button type="submit" class="btn login-btn">Entrar</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Script de Validação e Redirecionamento -->
+<script>
+  function validarLogin(event) {
+    // Evita que a página recarregue ao enviar o formulário
+    event.preventDefault();
+
+    var user = document.getElementById("usuario").value.trim();
+    var pass = document.getElementById("senha").value.trim();
+    var msg = document.getElementById("msgErro");
+
+    // Limpa mensagem de erro anterior
+    msg.innerHTML = "";
+
+    // Validação para Aluno
+    if (user === "aluno1" && pass === "estudos") {
+      // Substitua 'portal-aluno.html' pelo link desejado para o aluno
+      window.location.href = "aluno.html"; 
+    } 
+    // Validação para Professor
+    else if (user === "teacher" && pass === "ingles") {
+      // Substitua 'portal-professor.html' pelo link desejado para o professor
+      window.location.href = "professor.html"; 
+    } 
+    // Caso os dados estejam incorretos
+    else {
+      msg.innerHTML = "Usuário ou senha incorretos!";
+    }
+  }
+</script>
+
+</body>
+</html>
