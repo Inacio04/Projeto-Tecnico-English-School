@@ -154,7 +154,7 @@
   </div>
 </nav>
 
-<!-- Seção Principal com Painel do Professor -->
+<!-- Seção Principal -->
 <div class="container-fluid" style="margin-top: 50px;">
   <div class="text-center">
     <h2>Painel do Professor</h2>
@@ -178,23 +178,23 @@
 
   <hr style="margin: 40px 0; border-top: 1px solid #ddd;">
 
-  <!-- ÁREA ONDE OS MATERIAIS POSTADOS IRÃO APARECER -->
+  <!-- ÁREA ONDE OS MATERIAIS SALVOS APARECEM -->
   <div class="container">
     <div class="text-center" style="margin-bottom: 30px;">
       <h2>Materiais Publicados</h2>
     </div>
 
-    <!-- Mensagem exibida caso não haja nenhum material postado ainda -->
+    <!-- Mensagem exibida caso não haja material -->
     <div id="msgSemMaterial" class="text-center" style="color: #999; padding: 20px;">
       <p><em>Nenhum material publicado até o momento. Clique em "+ Postar Material" para começar.</em></p>
     </div>
 
-    <!-- Container dinâmico para os cards -->
+    <!-- Lista dinamicamente abastecida -->
     <div id="listaMateriais" class="row"></div>
   </div>
 </div>
 
-<!-- MODAL / POP-UP PARA POSTAGEM DE MATERIAL -->
+<!-- POP-UP / MODAL PARA NOVO MATERIAL -->
 <div class="modal fade" id="modalPostarMaterial" tabindex="-1" role="dialog" aria-labelledby="modalLabel">
   <div class="modal-dialog" role="document">
     <div class="modal-content">
@@ -242,9 +242,17 @@
   </div>
 </div>
 
-<!-- Lógica em JS para validação, contagem e renderização dos cards -->
+<!-- Lógica em JS com LocalStorage (Persistência no Navegador) -->
 <script>
-  var contadorMateriais = 0;
+  // Ao carregar a página, busca o histórico salvo no navegador
+  document.addEventListener("DOMContentLoaded", function () {
+    renderizarMateriais();
+  });
+
+  function obterMateriaisSalvos() {
+    var materiais = localStorage.getItem("materiais_professor");
+    return materiais ? JSON.parse(materiais) : [];
+  }
 
   function salvarMaterial(event) {
     event.preventDefault();
@@ -258,54 +266,98 @@
     var temPdf = pdfInput.files.length > 0;
     var nomePdf = temPdf ? pdfInput.files[0].name : "";
 
-    // Validação: Exige pelo menos um Vídeo ou PDF
+    // Validação: Exige ao menos um Vídeo ou PDF
     if (video === "" && !temPdf) {
       alerta.style.display = "block";
       return;
     }
 
     alerta.style.display = "none";
-    contadorMateriais++;
-    
-    // Atualiza a contagem
-    document.getElementById("totalMateriais").innerText = contadorMateriais;
-    
-    // Oculta a mensagem de "nenhum material"
-    document.getElementById("msgSemMaterial").style.display = "none";
 
-    // Constrói o HTML do novo card publicado
-    var tagsHTML = "";
-    var acoesHTML = "";
+    // Cria o objeto do novo material
+    var novoMaterial = {
+      id: Date.now(),
+      titulo: titulo,
+      video: video,
+      nomePdf: nomePdf,
+      descricao: descricao
+    };
 
-    if (video !== "") {
-      tagsHTML += '<span class="tag-item tag-video"><span class="glyphicon glyphicon-play-circle"></span> Vídeo</span>';
-      acoesHTML += '<a href="' + video + '" target="_blank" class="btn btn-xs btn-primary" style="margin-right: 5px;"><span class="glyphicon glyphicon-open-file"></span> Abrir Vídeo</a>';
-    }
+    // Salva no LocalStorage
+    var lista = obterMateriaisSalvos();
+    lista.unshift(novoMaterial); // Adiciona no início da lista
+    localStorage.setItem("materiais_professor", JSON.stringify(lista));
 
-    if (temPdf) {
-      tagsHTML += '<span class="tag-item tag-pdf"><span class="glyphicon glyphicon-file"></span> PDF: ' + nomePdf + '</span>';
-      acoesHTML += '<a href="#" class="btn btn-xs btn-danger"><span class="glyphicon glyphicon-download-alt"></span> Baixar PDF</a>';
-    }
+    // Atualiza a tela
+    renderizarMateriais();
 
-    var cardHTML = `
-      <div class="col-sm-6">
-        <div class="material-card">
-          <div class="pull-right">${tagsHTML}</div>
-          <h3 class="material-title">${titulo}</h3>
-          <p>${descricao !== "" ? descricao : "<em>Sem descrição informada.</em>"}</p>
-          <div style="margin-top: 15px; padding-top: 10px; border-top: 1px solid #f0f0f0;">
-            ${acoesHTML}
-          </div>
-        </div>
-      </div>
-    `;
-
-    // Insere o card no topo da lista
-    document.getElementById("listaMateriais").insertAdjacentHTML('afterbegin', cardHTML);
-
-    // Reseta o formulário e fecha o modal
+    // Reseta o formulário e fecha a modal
     document.getElementById("formPostarMaterial").reset();
     $('#modalPostarMaterial').modal('hide');
+  }
+
+  // Função para renderizar os cards salvos no HTML
+  function renderizarMateriais() {
+    var lista = obterMateriaisSalvos();
+    var container = document.getElementById("listaMateriais");
+    var msgSemMaterial = document.getElementById("msgSemMaterial");
+    var badgeTotal = document.getElementById("totalMateriais");
+
+    badgeTotal.innerText = lista.length;
+
+    if (lista.length === 0) {
+      msgSemMaterial.style.display = "block";
+      container.innerHTML = "";
+      return;
+    }
+
+    msgSemMaterial.style.display = "none";
+    var htmlContent = "";
+
+    lista.forEach(function (item) {
+      var tagsHTML = "";
+      var acoesHTML = "";
+
+      if (item.video) {
+        tagsHTML += '<span class="tag-item tag-video"><span class="glyphicon glyphicon-play-circle"></span> Vídeo</span>';
+        acoesHTML += '<a href="' + item.video + '" target="_blank" class="btn btn-xs btn-primary" style="margin-right: 5px;"><span class="glyphicon glyphicon-open-file"></span> Abrir Vídeo</a>';
+      }
+
+      if (item.nomePdf) {
+        tagsHTML += '<span class="tag-item tag-pdf"><span class="glyphicon glyphicon-file"></span> PDF: ' + item.nomePdf + '</span>';
+        acoesHTML += '<a href="#" class="btn btn-xs btn-danger" style="margin-right: 5px;"><span class="glyphicon glyphicon-download-alt"></span> PDF Anexado</a>';
+      }
+
+      // Botão para apagar um material salvo
+      acoesHTML += '<button onclick="excluirMaterial(' + item.id + ')" class="btn btn-xs btn-default pull-right" title="Excluir"><span class="glyphicon glyphicon-trash text-danger"></span></button>';
+
+      htmlContent += `
+        <div class="col-sm-6">
+          <div class="material-card">
+            <div class="pull-right">${tagsHTML}</div>
+            <h3 class="material-title">${item.titulo}</h3>
+            <p>${item.descricao !== "" ? item.descricao : "<em>Sem descrição informada.</em>"}</p>
+            <div style="margin-top: 15px; padding-top: 10px; border-top: 1px solid #f0f0f0;">
+              ${acoesHTML}
+            </div>
+          </div>
+        </div>
+      `;
+    });
+
+    container.innerHTML = htmlContent;
+  }
+
+  // Função para excluir um material do LocalStorage
+  function excluirMaterial(id) {
+    if (confirm("Deseja realmente apagar este material postado?")) {
+      var lista = obterMateriaisSalvos();
+      lista = lista.filter(function (item) {
+        return item.id !== id;
+      });
+      localStorage.setItem("materiais_professor", JSON.stringify(lista));
+      renderizarMateriais();
+    }
   }
 </script>
 
