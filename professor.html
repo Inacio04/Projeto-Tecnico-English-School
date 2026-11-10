@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <title>Inglês Ijuí</title>
+  <title>Inglês Ijuí - Painel do Professor</title>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
@@ -94,6 +94,38 @@
       padding: 6px 14px;
       border-radius: 12px;
     }
+
+    /* Estilos dos Cards de Materiais Postados */
+    .material-card {
+      background: #fff;
+      border: 1px solid #e0e0e0;
+      border-top: 4px solid #1e45f4;
+      padding: 20px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+      transition: transform 0.2s;
+    }
+    .material-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 15px rgba(30,69,244,0.15);
+    }
+    .material-title {
+      color: #303030;
+      font-family: Montserrat, sans-serif;
+      margin-top: 0;
+      font-weight: 600;
+    }
+    .tag-item {
+      display: inline-block;
+      padding: 3px 10px;
+      font-size: 12px;
+      font-weight: bold;
+      border-radius: 3px;
+      margin-right: 5px;
+      margin-bottom: 10px;
+    }
+    .tag-video { background-color: #e3f2fd; color: #0d47a1; }
+    .tag-pdf { background-color: #ffebee; color: #c62828; }
   </style>
 </head>
 <body id="myPage" data-spy="scroll" data-target=".navbar" data-offset="60">
@@ -115,7 +147,6 @@
         <li><a href="#services">Serviços</a></li>
         <li><a href="#portfolio">Onde estamos</a></li>
         <li><a href="#pricing">Cursos</a></li>
-        <!-- Botão que dispara o Pop-up/Modal -->
         <li><a href="#" data-toggle="modal" data-target="#modalPostarMaterial">+ Postar Material</a></li>
         <li><a href="#contact">Contato</a></li>
       </ul>
@@ -130,7 +161,7 @@
     <h4>Gerencie e publique materiais didáticos para os alunos</h4>
   </div>
 
-  <!-- Contador de Materiais -->
+  <!-- Área de Contagem e Postagem -->
   <div class="row">
     <div class="col-sm-6 col-sm-offset-3">
       <div class="contador-card text-center">
@@ -144,6 +175,23 @@
       </div>
     </div>
   </div>
+
+  <hr style="margin: 40px 0; border-top: 1px solid #ddd;">
+
+  <!-- ÁREA ONDE OS MATERIAIS POSTADOS IRÃO APARECER -->
+  <div class="container">
+    <div class="text-center" style="margin-bottom: 30px;">
+      <h2>Materiais Publicados</h2>
+    </div>
+
+    <!-- Mensagem exibida caso não haja nenhum material postado ainda -->
+    <div id="msgSemMaterial" class="text-center" style="color: #999; padding: 20px;">
+      <p><em>Nenhum material publicado até o momento. Clique em "+ Postar Material" para começar.</em></p>
+    </div>
+
+    <!-- Container dinâmico para os cards -->
+    <div id="listaMateriais" class="row"></div>
+  </div>
 </div>
 
 <!-- MODAL / POP-UP PARA POSTAGEM DE MATERIAL -->
@@ -151,13 +199,11 @@
   <div class="modal-dialog" role="document">
     <div class="modal-content">
       
-      <!-- Cabeçalho do Pop-up -->
       <div class="modal-header">
         <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
         <h4 class="modal-title" id="modalLabel" style="color:#fff; margin-bottom:0;">Publicar Novo Material</h4>
       </div>
       
-      <!-- Corpo do Form -->
       <div class="modal-body">
         <form id="formPostarMaterial" onsubmit="salvarMaterial(event)">
           
@@ -196,19 +242,24 @@
   </div>
 </div>
 
-<!-- Lógica em JS para validação e contagem -->
+<!-- Lógica em JS para validação, contagem e renderização dos cards -->
 <script>
   var contadorMateriais = 0;
 
   function salvarMaterial(event) {
     event.preventDefault();
 
+    var titulo = document.getElementById("tituloMaterial").value.trim();
     var video = document.getElementById("videoLink").value.trim();
-    var pdf = document.getElementById("pdfFile").files.length;
+    var pdfInput = document.getElementById("pdfFile");
+    var descricao = document.getElementById("descricao").value.trim();
     var alerta = document.getElementById("alertaValidação");
 
-    // Valida que ao menos UM dos dois (Vídeo ou PDF) foi preenchido
-    if (video === "" && pdf === 0) {
+    var temPdf = pdfInput.files.length > 0;
+    var nomePdf = temPdf ? pdfInput.files[0].name : "";
+
+    // Validação: Exige pelo menos um Vídeo ou PDF
+    if (video === "" && !temPdf) {
       alerta.style.display = "block";
       return;
     }
@@ -216,14 +267,45 @@
     alerta.style.display = "none";
     contadorMateriais++;
     
-    // Atualiza o contador exibido para o professor
+    // Atualiza a contagem
     document.getElementById("totalMateriais").innerText = contadorMateriais;
+    
+    // Oculta a mensagem de "nenhum material"
+    document.getElementById("msgSemMaterial").style.display = "none";
 
-    // Reseta o formulário e fecha o Pop-up
+    // Constrói o HTML do novo card publicado
+    var tagsHTML = "";
+    var acoesHTML = "";
+
+    if (video !== "") {
+      tagsHTML += '<span class="tag-item tag-video"><span class="glyphicon glyphicon-play-circle"></span> Vídeo</span>';
+      acoesHTML += '<a href="' + video + '" target="_blank" class="btn btn-xs btn-primary" style="margin-right: 5px;"><span class="glyphicon glyphicon-open-file"></span> Abrir Vídeo</a>';
+    }
+
+    if (temPdf) {
+      tagsHTML += '<span class="tag-item tag-pdf"><span class="glyphicon glyphicon-file"></span> PDF: ' + nomePdf + '</span>';
+      acoesHTML += '<a href="#" class="btn btn-xs btn-danger"><span class="glyphicon glyphicon-download-alt"></span> Baixar PDF</a>';
+    }
+
+    var cardHTML = `
+      <div class="col-sm-6">
+        <div class="material-card">
+          <div class="pull-right">${tagsHTML}</div>
+          <h3 class="material-title">${titulo}</h3>
+          <p>${descricao !== "" ? descricao : "<em>Sem descrição informada.</em>"}</p>
+          <div style="margin-top: 15px; padding-top: 10px; border-top: 1px solid #f0f0f0;">
+            ${acoesHTML}
+          </div>
+        </div>
+      </div>
+    `;
+
+    // Insere o card no topo da lista
+    document.getElementById("listaMateriais").insertAdjacentHTML('afterbegin', cardHTML);
+
+    // Reseta o formulário e fecha o modal
     document.getElementById("formPostarMaterial").reset();
     $('#modalPostarMaterial').modal('hide');
-
-    alert("Material publicado com sucesso!");
   }
 </script>
 
